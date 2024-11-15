@@ -5,73 +5,78 @@ import java.util.Scanner;
 
 public class Actividad_4 {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+
+        Scanner scanner = new Scanner(System.in);
+
+        // Parámetros de conexión
         String url = "jdbc:mysql://localhost:3306/tiendas";
-        String usuario = "root";  // Cambia por tu usuario de MySQL
-        String password = "usuario"; // Cambia por tu contraseña de MySQL
-        int opcion=0;
+        String usuario = "root";
+        String password = "usuario";
 
+        // Crear instancia de Conectar
+        Conectar conectar = null;
         try {
-            // Crear una instancia de la clase Conectar
-            Conectar conexionBD = new Conectar(url, usuario, password);
-            // Usar la conexión para ejecutar consultas...
-            Connection conn = conexionBD.getConexion();
-            System.out.println("------------MENU-------------");
-            System.out.println("1. Insertar Articulo");
-            System.out.println("2. Insertar Empresario");
-            System.out.println("3. Insertar Fruteria");
-            System.out.println("4. Insertar Registros en la tabla Stock");
-            System.out.println("5. Mostrar las fruterias de un empleado,mostramos nombre DNI, nombre del empresario y nombre de la fruteria");
-            System.out.println("6. Mostrar para una fruteria, el stock que tiene disponible. Mostramos nombre de la fruteria, nombre del articulo, tipo del articulo y cantidad en stock.");
-            System.out.println("Introduce una opcion: ");
-            opcion=sc.nextInt();
-            switch (opcion){
+            conectar = new Conectar(url, usuario, password);
+        } catch (SQLException e) {
+            System.out.println("No se pudo establecer la conexión con la base de datos.");
+            e.printStackTrace();
+            return;
+        }
+
+        int opcion;
+
+        do {
+            System.out.println("\n--- Menú ---");
+            System.out.println("1. Ejecutar procedimiento numero_fruterias");
+            System.out.println("2. Ejecutar función stock_articulo");
+            System.out.println("3. Salir");
+            System.out.print("Seleccione una opción: ");
+            opcion = scanner.nextInt();
+            scanner.nextLine(); // Limpiar el buffer
+
+            switch (opcion) {
                 case 1:
-                    /*
-                    Cambiarlo para que lo pida todo por teclado
-                     */
-                    Integer codigo=20;
-                    String articulo="Platano";
-                    String categoria="Fruta";
-                    Double precio=9.5;
-                    //insertarArticulo(conn,codigo,articulo,categoria,precio,sc);
-                    break;
-                case 2:
-                    String DNI="25034786F";
-                    String nombre="Platano";
-                    Integer telefono=675332818;
-                    //insertarEmpresario(conn,DNI,nombre,telefono,sc);
-                    break;
-                case 3:
-                    Integer cod=60;
-                    String nombe="FRUTERIA PAPAYA";
-                    String direccion="Avda Diego Reina Sofia,23";
-                    Integer tfno=675332818;
-                    String codempresario="33396348W";
-                    //insertarFruteria(conn,cod,nombe,direccion,tfno,codempresario,sc);
-                    break;
-                case 4:
-                    Integer codart=1;
-                    Integer codfamilia=50;
-                    Integer cantidad=300;
-                    //insertarStock(conn,codart,codfamilia,cantidad,sc);
-                    break;
-                case 5:
-                    String DNIEmpresario="25034786L";
-                    //mostrarFruteriasEmpleados(conn,DNIEmpresario,sc);
-                    break;
-                default:
-                    System.out.println("Has introducido un numero invalido");
+                    ejecutarNumeroFruterias(scanner,conectar);
                     break;
 
+                case 2:
+                    ejecutarStockArticulo(scanner,conectar);
+                    break;
+
+                case 3:
+                    System.out.println("Saliendo del programa...");
+                    break;
+
+                default:
+                    System.out.println("Opción no válida, por favor seleccione una opción válida.");
             }
 
+        } while (opcion != 3);
 
-            // Cerrar la conexión cuando ya no sea necesaria
-            conexionBD.cerrarConexion();
+        scanner.close();
+    }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+    private static void ejecutarNumeroFruterias(Scanner scanner1,Conectar conectar) {
+        System.out.print("Ingrese el DNI del empresario: ");
+        String dni = scanner1.nextLine();
+
+        int numeroFruterias = ProcedimientoFruteria.getNumeroFruterias(dni,conectar);
+        System.out.println("Número de fruterías para el empresario con DNI " + dni + ": " + numeroFruterias);
+    }
+
+    private static void ejecutarStockArticulo(Scanner scanner,Conectar conectar) {
+        System.out.print("Ingrese el nombre del artículo: ");
+        String nombreArticulo = scanner.nextLine();
+
+        System.out.print("Ingrese el nombre de la frutería: ");
+        String nombreFruteria = scanner.nextLine();
+
+        int stock = ProcedimientoStock.getStockArticulo(nombreArticulo, nombreFruteria,conectar);
+        if(stock==0){
+            System.out.println("EL ARTÍCULO "+nombreArticulo+" NO ESTÁ EN STOCK EN LA FRUTERÍA "+nombreFruteria);
+        }
+        else {
+            System.out.println("Stock del artículo " + nombreArticulo + " en " + nombreFruteria + ": " + stock);
         }
     }
 }
